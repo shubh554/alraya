@@ -3,34 +3,113 @@ import { View, ScrollView, Image, Dimensions, StyleSheet,StatusBar } from 'react
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Container, Header, Title, Content, Footer, FooterTab, Button, Left, Right, Body, Icon, Text, Card, CardItem } from 'native-base';
-
+import { AsyncStorage } from 'react-native';
 const { width, height } = Dimensions.get('window')
+import * as firebase from 'firebase';
+// Initialize Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyCgViVTOvFYM_tsL-I8eSNUZB508ySBIYk",
+    authDomain: "alrayastore-8d98b.firebaseapp.com",
+    databaseURL: "https://alrayastore-8d98b.firebaseio.com",
+    projectId: "alrayastore-8d98b",
+    storageBucket: "alrayastore-8d98b.appspot.com",
+    messagingSenderId: "225562632199",
+    appId: "1:225562632199:web:e63932dc9b8077a2b8caa2",
+    measurementId: "G-QYTJCETYRV"
+  };
+  
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+
 
 class Cart extends Component {
+    constructor(props){
+        super(props);
+        this.state = {
+           cart:'',
+           cartEmpty:true,
+           cartTotal:0
+          };
+      
+        
+      }
+
+    async componentDidMount()
+      {
+       let cart = await AsyncStorage.getItem('cart');
+       let cartArray='' 
+       let cartItems=''  
+       //alert(cart.length)   
+       if(cart.length > 1)
+       {
+        
+        cartArray = cart.split(',')
+        
+       
+       this.setState({cartEmpty:false,cart:cartArray})
+
+      
+      }
+    }
+
+       getCartItems()
+      {
+      
+        let cartitems = '';
+        let carttotal = 0;
+        
+       for(let i = 1;i<this.state.cart.length;i++)
+       {
+        firebase.database().ref('cart/' + this.state.cart[i]).on('value', (snapshot) => {
+            let name = snapshot.val().name;
+            carttotal += snapshot.val().price; 
+            cartitems=[...cartitems,<Card style={styles.card}>
+                <CardItem style={{ marginLeft: 0, paddingLeft: 0 }}>
+                    <Image resizeMode={'contain'} 
+                       source={{
+                        uri:
+                         snapshot.val().image
+                      }}
+                        style={{ width: width / 3.65, height: width / 3.65, borderRadius: 0 }}
+                    />
+                    <View style={{ alignItems: 'flex-start', justifyContent: 'center', flex: 1.9 }}>
+                     
+                        <Text style={{ fontSize: 16, fontWeight: '700' }}>{snapshot.val().name}</Text>
+                     
+         
+                        <Text style={styles.price}>SAR {snapshot.val().price}</Text>
+                    </View>
+                    <Right>
+                        <Button bordered success small>
+                            <Text style={{fontSize:12}}>Add</Text>
+                        </Button>
+                    </Right>
+                </CardItem>
+            </Card>]
+        
+          });  
+       
+       }  
+       
+
+       return  cartitems;
+    
+        
+        
+      
+        
+       
+        
+      }
+
+      
     render() {
+       if(!this.state.cartEmpty){
         return (
             <>
  
-                {/* <View style={{ backgroundColor: '#f3f6f9', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 10, borderBottomWidth: 2, borderBottomColor: '#EAECEF' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 5, }}>
-                        <TouchableOpacity onPress={() => this.props.navigation.goBack()}>
-                            <FontAwesome5 name="arrow-left" size={20} color={'#000'} />
-                        </TouchableOpacity>
-                        <Text style={{ fontSize: 20, fontWeight: "bold", fontFamily: 'AvenirNextLTPro-Bold', color: "green", marginLeft: 15 }}>Cart</Text>
-                    </View>
-                    <View style={{ justifyContent: "flex-end", flexDirection: 'row' }}>
-                        <Text style={{ fontSize: 10, marginRight: 20, fontFamily: 'AvenirNextLTPro-Bold', color: "#000" }}>
-                            <FontAwesome5 name="search" size={20} />
-                        </Text>
-
-                        <Text style={{ fontSize: 10, fontFamily: 'AvenirNextLTPro-Bold', color: "#000" }}>
-                            <FontAwesome5 name="shopping-cart" size={20} />
-                        </Text>
-                    </View>
-                </View> */}
-
-
-                <Container>
+         <Container>
                     <Header style={{ backgroundColor: '#fff' }}>
                     <StatusBar backgroundColor="green" barStyle="light-content" />
                         <Left>
@@ -41,9 +120,7 @@ class Cart extends Component {
                                 <Text style={{ fontSize: 18, fontWeight: "bold", fontFamily: 'AvenirNextLTPro-Bold', color: "green", marginLeft: 15 }}>Cart</Text>
                             </View>
                         </Left>
-                        {/* <Body>
-                                <Title>Header</Title>
-                            </Body> */}
+                       
                         <Right >
                             <Text style={{ fontSize: 10, marginRight: 20, fontFamily: 'AvenirNextLTPro-Bold', color: "#000" }}>
                                 <FontAwesome5 name="search" size={18} />
@@ -58,124 +135,12 @@ class Cart extends Component {
                         scrollEventThrottle={16}
                     >
                         <Content>
-                            <Card style={styles.card}>
-                                <CardItem style={{ marginLeft: 0, paddingLeft: 0 }}>
-                                    <Image resizeMode={'contain'} source={require('../../assets/images/i1.jpg')}
-                                        style={{ width: width / 3.65, height: width / 3.65, borderRadius: 0 }}
-                                    />
-                                    <View style={{ alignItems: 'flex-start', justifyContent: 'center', flex: 1.9 }}>
-                                        <Text style={{ fontFamily: 'AvenirNextLTPro-Bold', color: 'green', fontSize: 12 }}>Up to 65% OFF</Text>
-                                        <Text style={{ fontSize: 16, fontWeight: '700' }}>Family Farm Sugar</Text>
-                                        <Text style={{ fontFamily: 'AvenirNextLTPro-Regular', fontSize: 12, color: '#666' }}>1 Kg</Text>
-
-                                        <Text style={styles.price}>₹46</Text>
-                                    </View>
-                                    <Right>
-                                        <Button bordered success small>
-                                            <Text style={{fontSize:12}}>Add</Text>
-                                        </Button>
-                                    </Right>
-                                </CardItem>
-                            </Card>
-                            <Card style={styles.card}>
-                                <CardItem style={{ marginLeft: 0, paddingLeft: 0 }}>
-                                    <Image resizeMode={'contain'} source={require('../../assets/images/i2.jpg')}
-                                        style={{ width: width / 3.65, height: width / 3.65, borderRadius: 0 }}
-                                    />
-                                    <View style={{ alignItems: 'flex-start', justifyContent: 'center', flex: 1.9 }}>
-                                        <Text style={{ fontFamily: 'AvenirNextLTPro-Bold', color: 'green', fontSize: 12 }}>Up to 65% OFF</Text>
-                                        <Text style={{ fontSize: 16, fontWeight: '700' }}>Family Farm Sugar</Text>
-                                        <Text style={{ fontFamily: 'AvenirNextLTPro-Regular', fontSize: 12, color: '#666' }}>1 Kg</Text>
-
-                                        <Text style={styles.price}>₹46</Text>
-
-                                    </View>
-                                    <Right>
-                                        <Button bordered success small>
-                                            <Text style={{fontSize:12}}>Add</Text>
-                                        </Button>
-                                    </Right>
-                                </CardItem>
-                            </Card>
-                            <Card style={styles.card}>
-                                <CardItem style={{ marginLeft: 0, paddingLeft: 0 }}>
-                                    <Image resizeMode={'contain'} source={require('../../assets/images/i3.jpg')}
-                                        style={{ width: width / 3.65, height: width / 3.65, borderRadius: 0 }}
-                                    />
-                                    <View style={{ alignItems: 'flex-start', justifyContent: 'center', flex: 1.9 }}>
-                                        <Text style={{ fontFamily: 'AvenirNextLTPro-Bold', color: 'green', fontSize: 12 }}>Up to 65% OFF</Text>
-                                        <Text style={{ fontSize: 16, fontWeight: '700' }}>Family Farm Sugar</Text>
-                                        <Text style={{ fontFamily: 'AvenirNextLTPro-Regular', fontSize: 12, color: '#666' }}>1 Kg</Text>
-
-                                        <Text style={styles.price}>₹46</Text>
-                                    </View>
-                                    <Right>
-                                        <Button bordered success small>
-                                            <Text style={{fontSize:12}}>Add</Text>
-                                        </Button>
-                                    </Right>
-                                </CardItem>
-                            </Card>
-                            <Card style={styles.card}>
-                                <CardItem style={{ marginLeft: 0, paddingLeft: 0 }}>
-                                    <Image resizeMode={'contain'} source={require('../../assets/images/i4.jpg')}
-                                        style={{ width: width / 3.65, height: width / 3.65, borderRadius: 0 }}
-                                    />
-                                    <View style={{ alignItems: 'flex-start', justifyContent: 'center', flex: 1.9 }}>
-                                        <Text style={{ fontFamily: 'AvenirNextLTPro-Bold', color: 'green', fontSize: 12 }}>Up to 65% OFF</Text>
-                                        <Text style={{ fontSize: 16, fontWeight: '700' }}>Family Farm Sugar</Text>
-                                        <Text style={{ fontFamily: 'AvenirNextLTPro-Regular', fontSize: 12, color: '#666' }}>1 Kg</Text>
-
-                                        <Text style={styles.price}>₹46</Text>
-
-                                    </View>
-                                    <Right>
-                                        <Button bordered success small>
-                                            <Text style={{fontSize:12}}>Add</Text>
-                                        </Button>
-                                    </Right>
-                                </CardItem>
-                            </Card>
-                            <Card style={styles.card}>
-                                <CardItem style={{ marginLeft: 0, paddingLeft: 0 }}>
-                                    <Image resizeMode={'contain'} source={require('../../assets/images/i5.jpg')}
-                                        style={{ width: width / 3.65, height: width / 3.65, borderRadius: 0 }}
-                                    />
-                                    <View style={{ alignItems: 'flex-start', justifyContent: 'center', flex: 1.9 }}>
-                                        <Text style={{ fontFamily: 'AvenirNextLTPro-Bold', color: 'green', fontSize: 12 }}>Up to 65% OFF</Text>
-                                        <Text style={{ fontSize: 16, fontWeight: '700' }}>Family Farm Sugar</Text>
-                                        <Text style={{ fontFamily: 'AvenirNextLTPro-Regular', fontSize: 12, color: '#666' }}>1 Kg</Text>
-
-                                        <Text style={styles.price}>₹46</Text>
-
-                                    </View>
-                                    <Right>
-                                        <Button bordered success small>
-                                            <Text style={{fontSize:12}}>Add</Text>
-                                        </Button>
-                                    </Right>
-                                </CardItem>
-                            </Card>
-                            <Card style={styles.card}>
-                                <CardItem style={{ marginLeft: 0, paddingLeft: 0 }}>
-                                    <Image resizeMode={'contain'} source={require('../../assets/images/i4.jpg')}
-                                        style={{ width: width / 3.65, height: width / 3.65, borderRadius: 0 }}
-                                    />
-                                    <View style={{ alignItems: 'flex-start', justifyContent: 'center', flex: 1.9 }}>
-                                        <Text style={{ fontFamily: 'AvenirNextLTPro-Bold', color: 'green', fontSize: 12 }}>Up to 65% OFF</Text>
-                                        <Text style={{ fontSize: 16, fontWeight: '700' }}>Family Farm Sugar</Text>
-                                        <Text style={{ fontFamily: 'AvenirNextLTPro-Regular', fontSize: 12, color: '#666' }}>1 Kg</Text>
-
-                                        <Text style={styles.price}>₹46</Text>
-
-                                    </View>
-                                    <Right>
-                                        <Button bordered success small>
-                                            <Text style={{fontSize:12}}>Add</Text>
-                                        </Button>
-                                    </Right>
-                                </CardItem>
-                            </Card>
+                           
+                           
+                       
+                        
+                       {this.getCartItems()}
+                     
                         </Content>
                     </ScrollView>
                     <Footer>
@@ -191,16 +156,61 @@ class Cart extends Component {
                     </Footer>
                 </Container>
 
-
-
-
-
-
-
-
-
-            </>
-        )
+ </> )}
+        else{
+            return(
+                <>
+ 
+                <Container>
+                           <Header style={{ backgroundColor: '#fff' }}>
+                           <StatusBar backgroundColor="green" barStyle="light-content" />
+                               <Left>
+                                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 5, }}>
+                                       <TouchableOpacity onPress={() => this.props.navigation.goBack()}>
+                                           <FontAwesome5 name="arrow-left" size={18} color={'#000'} />
+                                       </TouchableOpacity>
+                                       <Text style={{ fontSize: 18, fontWeight: "bold", fontFamily: 'AvenirNextLTPro-Bold', color: "green", marginLeft: 15 }}>Cart</Text>
+                                   </View>
+                               </Left>
+                              
+                               <Right >
+                                   <Text style={{ fontSize: 10, marginRight: 20, fontFamily: 'AvenirNextLTPro-Bold', color: "#000" }}>
+                                       <FontAwesome5 name="search" size={18} />
+                                   </Text>
+       
+                                   <Text style={{ fontSize: 10, fontFamily: 'AvenirNextLTPro-Bold', color: "#000" }}>
+                                       <FontAwesome5 name="shopping-cart" size={18} />
+                                   </Text>
+                               </Right>
+                           </Header>
+                           <ScrollView
+                               scrollEventThrottle={16}
+                           >
+                               <Content>
+                                  
+                                  
+                              
+                               
+                              <Text>Your Cart Is Empty</Text>
+                            
+                               </Content>
+                           </ScrollView>
+                           <Footer>
+                               <FooterTab style={{ backgroundColor: '#8bc34a' }}>
+                                   <View style={{flex:0.5,flexDirection:'column',justifyContent:'center',alignItems:'center'}}>
+                                       <Text style={{fontSize:12,fontWeight:'700',color:'#fdfdfd'}}>SAR 989</Text>
+                                   
+                                   </View>
+                                   <Button style={{backgroundColor:'green'}} onPress={() => this.props.navigation.navigate('Delivery')}>
+                                       <Text style={{color:"#fff",fontWeight:'700',fontSize:12}}>Checkout</Text>
+                                   </Button>
+                               </FooterTab>
+                           </Footer>
+                       </Container>
+       
+        </>
+            )
+        }
     }
 }
 

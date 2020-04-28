@@ -55,8 +55,11 @@ export default class Home extends Component {
     </Button>
     };
     this.mainCrousal = this.mainCrousal.bind(this);
+    
     this.checkLogin()
   }
+
+ 
 
   componentDidMount(){
    

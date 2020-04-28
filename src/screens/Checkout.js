@@ -9,6 +9,8 @@ import { ENTRIES1, ENTRIES2 } from '../static/entries';
 import { scrollInterpolators, animatedStyles } from '../utils/animations';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import * as firebase from 'firebase';
+import { getLightEstimationEnabled } from 'expo/build/AR';
+import { AsyncStorage } from 'react-native'; 
 const IS_ANDROID = Platform.OS === 'android';
 const SLIDER_1_FIRST_ITEM = 1;
 const { width, height } = Dimensions.get('window')
@@ -33,10 +35,13 @@ export default class Checkout extends Component {
     super(props);
    
     this.state = {
-      slider1ActiveSlide: SLIDER_1_FIRST_ITEM
+      slider1ActiveSlide: SLIDER_1_FIRST_ITEM,
+      email:''
     };
-  }
 
+  }
+   
+ 
   componentDidMount(){
   
     fetch('http://skyviewads.com/projects/PosCi/api/v1/products?code='+this.props.navigation.getParam('id'),{
@@ -127,12 +132,41 @@ export default class Checkout extends Component {
     }
   }
 
-  addToCart(name,price,code){
+  async addToCart(name,price,code,image){
     //alert(name+' '+price+' '+code);
-    
-    let key = firebase.database().ref(`/cart`).push().key;
-    firebase.database().ref(`/cart`).child(key).set({name:name,price:price,code:code});
+   // alert(this.state.email);
+   let key = firebase.database().ref(`/cart`).push().key;
+      firebase.database().ref(`/cart`).child(key).set({name:name,price:price,code:code,qty:1,image:image});
+     
+      this.enterItem(key)
+}
+
+
+
+async enterItem(key){
+  
+  
+  try{
+  let cart =await AsyncStorage.getItem('cart');
+  cart += ','+key ;
+  cart = cart.toString(cart);
+  await AsyncStorage.setItem('cart',cart);
+  this.props.navigation.navigate('Cart');  
+
+}
+  catch(error)
+  {
+    alert(error);
   }
+     
+  
+  
+  
+  //cart= [...cart,','+key]
+      //await AsyncStorage.setItem('cart', cart);
+      //alert('Item Added To Cart');
+     
+}
   render() {
     const checkout = this.main(1, 'Default layout | Loop | Autoplay | Parallax | Scale | Opacity | Pagination with tappable dots');
 
@@ -214,7 +248,7 @@ export default class Checkout extends Component {
               <Button success onPress={() => this.props.navigation.navigate('Fevorite')}>
                 <Text style={{fontSize:12,color:"#fff",fontWeight:'700'}}>Add to Fevorite</Text>
               </Button>
-              <Button onPress={() => this.addToCart(this.state.items.name,this.state.items.price,this.state.items.code)}>
+              <Button onPress={() => this.addToCart(this.state.items.name,this.state.items.price,this.state.items.code,this.state.items.image_url)}>
                 <Text style={{fontSize:12,color:"#fff",fontWeight:'700'}}>Add to cart</Text>
               </Button>
             </FooterTab>

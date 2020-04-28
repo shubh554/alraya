@@ -23,16 +23,7 @@ export let ENTRIES1 = [
 ];
 
 export const ENTRIES2 = [
-    {
-        title: 'Favourites landscapes 1',
-        subtitle: 'Lorem ipsum dolor sit amet',
-        illustration: 'http://skyviewads.com/projects/PosCi/assets/uploads/d107b60b0c542585dd6f06b45fda7eca.jpg'
-    },
-    {
-        title: 'Favourites landscapes 3',
-        subtitle: 'Lorem ipsum dolor sit amet et nuncat',
-        illustration: 'http://skyviewads.com/projects/PosCi/assets/uploads/d107b60b0c542585dd6f06b45fda7eca.jpg'
-    },
+   
     {
         title: 'Favourites landscapes 2',
         subtitle: 'Lorem ipsum dolor sit amet et nuncat mergitur',

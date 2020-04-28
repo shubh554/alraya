@@ -130,6 +130,12 @@ export default class Location extends Component {
       regions:''
     };
     this.checkLogin();
+   
+  }
+
+  async initializeCart()
+  {
+    await AsyncStorage.setItem('cart', '1');
   }
   onValueChange(value: string) {
     this.setState({
@@ -138,6 +144,7 @@ export default class Location extends Component {
   }
 
   componentDidMount(){
+    this.initializeCart();
     fetch('http://skyviewads.com/projects/PosCi/api/v1/regions', {
       method: 'GET',
       headers: {
@@ -202,6 +209,7 @@ export default class Location extends Component {
         
         try {
           await AsyncStorage.setItem('userStore', JSON.stringify(userLocation));
+          
           this.props.navigation.navigate({
             routeName:'Home',
             
